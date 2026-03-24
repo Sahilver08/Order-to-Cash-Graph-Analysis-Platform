@@ -86,7 +86,6 @@ npm run dev
 2. Open http://localhost:5173 in your browser
 3. Explore the graph by clicking nodes to expand relationships
 4. Use the chat interface for natural language queries:
-   - "Top products by revenue"
    - "Trace billing document 123456"
    - "Show broken flows"
 
