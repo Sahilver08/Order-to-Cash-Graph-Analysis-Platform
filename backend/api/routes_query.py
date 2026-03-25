@@ -22,6 +22,7 @@ def _rule_based_template_pick(question: str) -> tuple[str | None, dict[str, Any]
     if not text:
         return None, {}
 
+    print(f"Rule check: text='{text}'")  # debug
     if (("top" in text) or ("most" in text) or ("highest" in text)) and ("product" in text or "material" in text) and "billing" in text:
         return "top_products_by_billing_count", {"top_n": 5}
 
@@ -36,6 +37,7 @@ def _rule_based_template_pick(question: str) -> tuple[str | None, dict[str, Any]
     if ("broken" in text and "flow" in text) or "delivered" in text or "billed without delivery" in text:
         return "broken_flow_detection", {}
 
+    print("No match")  # debug
     return None, {}
 
 
@@ -47,24 +49,10 @@ def query_data(payload: QueryRequest, request: Request) -> dict[str, Any]:
     hf_client = request.app.state.hf_client
 
     if not template_name:
-        hf_pick = hf_client.classify_and_extract_template(question_text)
-        if hf_pick.get("ok"):
-            llm_data = hf_pick.get("data", {})
-            domain_related = bool(llm_data.get("domain_related"))
-            if not domain_related:
-                return {"ok": False, "answer": REFUSAL_MESSAGE}
-
-            template_name = llm_data.get("template")
-            llm_params = llm_data.get("params")
-            if isinstance(llm_params, dict):
-                params = llm_params
-
-        # fallback for no token / parsing failure
-        if not template_name:
-            template_name, picked_params = _rule_based_template_pick(
-                question_text)
-            if picked_params:
-                params = picked_params
+        # Skip HF, use rule-based
+        template_name, picked_params = _rule_based_template_pick(question_text)
+        if picked_params:
+            params = picked_params
 
     if template_name not in ALLOWED_TEMPLATES:
         return {"ok": False, "answer": REFUSAL_MESSAGE}

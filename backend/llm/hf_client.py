@@ -13,6 +13,8 @@ DEFAULT_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
 class HuggingFaceClient:
     def __init__(self, api_token: str | None = None, model: str = DEFAULT_MODEL) -> None:
         self.api_token = api_token or os.getenv("HF_API_TOKEN", "")
+        # Temporarily disable HF for reliable rule-based fallback
+        self.api_token = ""
         self.model = model
         self.base_url = f"https://api-inference.huggingface.co/models/{self.model}"
 
@@ -32,7 +34,8 @@ class HuggingFaceClient:
         prompt = (
             "You are an extraction assistant for an SAP O2C dataset system.\n"
             "Rules:\n"
-            "- Only allow dataset-domain questions.\n"
+            "- Assume questions about products, billing documents, orders, deliveries, payments are domain-related.\n"
+            "- Only set domain_related=false for clearly unrelated topics like weather, jokes, general knowledge.\n"
             "- If question is unrelated, set domain_related=false and template=none.\n"
             "- Output strict JSON only, no prose.\n"
             f"- Use this schema exactly: {schema_text}\n\n"
@@ -74,7 +77,8 @@ class HuggingFaceClient:
             "parameters": {"max_new_tokens": 256, "temperature": 0.1, "return_full_text": False},
         }
         try:
-            response = requests.post(self.base_url, headers=headers, json=payload, timeout=60)
+            response = requests.post(
+                self.base_url, headers=headers, json=payload, timeout=60)
             response.raise_for_status()
             data = response.json()
         except Exception:
@@ -104,7 +108,7 @@ def _safe_json_extract(text: str) -> Any:
     if start == -1 or end == -1 or end <= start:
         return None
 
-    snippet = text[start : end + 1]
+    snippet = text[start: end + 1]
     try:
         return json.loads(snippet)
     except Exception:

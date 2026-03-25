@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
     store = O2CDataStore(base_path=DATASET_BASE_PATH)
     store.load()
     app.state.data_store = store
-    app.state.hf_client = HuggingFaceClient()
+    app.state.hf_client = HuggingFaceClient(api_token="")
 
     app.include_router(graph_router)
     app.include_router(query_router)

@@ -62,7 +62,7 @@ export default function ChatPanel({ apiBaseUrl }: Props): JSX.Element {
         <div style={{ fontSize: 10, color: "#777" }}>Order to Cash</div>
       </div>
       <div style={{ padding: "10px 12px", fontSize: 13 }}>
-        <div style={{ fontWeight: 700, marginBottom: 6 }}>Dodge AI</div>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>Fryday AI</div>
         <div style={{ color: "#666", fontSize: 12 }}>Graph Agent</div>
       </div>
       <div style={{ flex: 1, overflow: "auto", padding: "0 12px 12px" }}>
@@ -70,7 +70,7 @@ export default function ChatPanel({ apiBaseUrl }: Props): JSX.Element {
         {messages.map((msg, idx) => (
           <div key={`${msg.role}-${idx}`} style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 12, color: "#666", marginBottom: 4, textAlign: msg.role === "user" ? "right" : "left" }}>
-              {msg.role === "user" ? "You" : "Dodge AI"}
+              {msg.role === "user" ? "You" : "Fryday AI"}
             </div>
             <div
               style={{
