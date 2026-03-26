@@ -32,13 +32,49 @@ class HuggingFaceClient:
             '"params": {"top_n"?: number, "billing_document_id"?: string}}'
         )
         prompt = (
-            "You are an extraction assistant for an SAP O2C dataset system.\n"
+            "You are a strict query classification and extraction assistant for an SAP Order-to-Cash (O2C) dataset system.\n\n"
+
+            "Your job:\n"
+            "- Determine if the question is related to the dataset\n"
+            "- Map it to one of the supported query templates\n"
+            "- Extract required parameters\n\n"
+
+            "Supported templates:\n"
+            "1. top_products_by_billing_count\n"
+            "2. trace_billing_document_flow\n"
+            "3. broken_flow_detection\n\n"
+
+            "Examples:\n"
+            "Q: Which products have the highest billing count?\n"
+            "A: {\"domain_related\": true, \"template\": \"top_products_by_billing_count\", \"params\": {\"top_n\": 5}}\n\n"
+
+            "Q: Show top 3 most billed products\n"
+            "A: {\"domain_related\": true, \"template\": \"top_products_by_billing_count\", \"params\": {\"top_n\": 3}}\n\n"
+
+            "Q: Which items are most frequently billed?\n"
+            "A: {\"domain_related\": true, \"template\": \"top_products_by_billing_count\", \"params\": {\"top_n\": 5}}\n\n"
+
+            "Q: Trace billing document 90504281\n"
+            "A: {\"domain_related\": true, \"template\": \"trace_billing_document_flow\", \"params\": {\"billing_document_id\": \"90504281\"}}\n\n"
+
+            "Q: Show full flow for billing 90504281\n"
+            "A: {\"domain_related\": true, \"template\": \"trace_billing_document_flow\", \"params\": {\"billing_document_id\": \"90504281\"}}\n\n"
+
+            "Q: Find broken flows\n"
+            "A: {\"domain_related\": true, \"template\": \"broken_flow_detection\", \"params\": {}}\n\n"
+
+            "Q: Show incomplete orders\n"
+            "A: {\"domain_related\": true, \"template\": \"broken_flow_detection\", \"params\": {}}\n\n"
+
+            "Q: Who is Virat Kohli?\n"
+            "A: {\"domain_related\": false, \"template\": \"none\", \"params\": {}}\n\n"
+
             "Rules:\n"
-            "- Assume questions about products, billing documents, orders, deliveries, payments are domain-related.\n"
-            "- Only set domain_related=false for clearly unrelated topics like weather, jokes, general knowledge.\n"
-            "- If question is unrelated, set domain_related=false and template=none.\n"
-            "- Output strict JSON only, no prose.\n"
-            f"- Use this schema exactly: {schema_text}\n\n"
+            "- Only mark domain_related=false for clearly unrelated questions\n"
+            "- Always return valid JSON\n"
+            "- Do NOT explain anything\n"
+            "- Do NOT add extra text\n\n"
+
             f"Question: {question}\n"
             "JSON:"
         )
@@ -57,15 +93,23 @@ class HuggingFaceClient:
             return "Query executed on dataset-backed template successfully."
 
         prompt = (
-            "You are an assistant answering only from provided execution result.\n"
+            "You are a data assistant answering strictly from provided dataset results.\n\n"
+
             "Rules:\n"
-            "- Do not add facts not present in result.\n"
-            "- If result is empty, say no matching dataset records.\n"
-            "- Keep answer concise.\n\n"
+            "- Only use the given result data\n"
+            "- Do NOT hallucinate\n"
+            "- If result is empty, clearly say no matching records found\n"
+            "- Keep the answer concise and structured\n\n"
+
+            "Formatting guidelines:\n"
+            "- Use numbered or bullet format when listing items\n"
+            "- Clearly label entities like Sales Order, Delivery, Billing, Payment\n"
+            "- Keep response clean and user-friendly\n\n"
+
             f"Question: {question}\n"
             f"Template: {template}\n"
             f"Params: {json.dumps(params)}\n"
-            f"Result: {json.dumps(result)}\n"
+            f"Result: {json.dumps(result)}\n\n"
             "Answer:"
         )
         return self._generate_text(prompt).strip() or "Query executed on dataset-backed template successfully."
