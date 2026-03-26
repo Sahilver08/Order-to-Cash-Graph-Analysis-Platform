@@ -89,7 +89,7 @@ export default function ChatPanel({ apiBaseUrl }: Props): JSX.Element {
                   Template: {msg.detail.template}
                 </div>
               )}
-              {msg.role === "assistant" && msg.detail?.result && (
+              {/* {msg.role === "assistant" && msg.detail?.result && (
                 <div style={{ marginTop: 8 }}>
                   <div style={{ fontSize: 11, color: "#444", marginBottom: 4 }}>Result data:</div>
                   <pre
@@ -107,7 +107,7 @@ export default function ChatPanel({ apiBaseUrl }: Props): JSX.Element {
                     {JSON.stringify(msg.detail.result, null, 2)}
                   </pre>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         ))}
